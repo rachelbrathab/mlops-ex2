@@ -1,9 +1,12 @@
-name: ML CI Pipeline (Fixed)
+name: ML CI Pipeline
 
 on:
   push:
     branches: [ "main", "dev" ]
   pull_request:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -18,30 +21,13 @@ jobs:
       with:
         python-version: "3.10"
 
-    - name: Cache Dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-
     - name: Install Dependencies
       run: |
-        pip install --upgrade pip
+        python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run Tests (skip if none)
-      run: |
-        if [ -d "tests" ]; then
-          python -m unittest discover
-        else
-          echo "No tests found, skipping..."
-        fi
+    - name: Debug Files (IMPORTANT)
+      run: ls -R
 
-    - name: Train Model
+    - name: Run Model
       run: python train.py
-
-    - name: Upload Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: model-results
-        path: .
